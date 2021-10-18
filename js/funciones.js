@@ -1,7 +1,10 @@
-import { formulario, resultado } from './selectores.js';
+import { formulario, resultado, resgistroPagina, paginacion  } from './selectores.js';
+let totalPaginas;
+let iterador;
+let paginaActual;
 
+export const ValidarFormulario = e => {
 
-export function ValidarFormulario(e) {
     e.preventDefault();
 
     const Buscartermino = document.querySelector('#termino').value;
@@ -9,7 +12,7 @@ export function ValidarFormulario(e) {
         mostrarAlerta('Agrega un termino de busqueda', 'error');
         return;
     }
-    buscarImagenes(Buscartermino);
+    buscarImagenes();
 }
 const mostrarAlerta = (mensaje) =>{
     
@@ -34,17 +37,29 @@ const mostrarAlerta = (mensaje) =>{
     
 };
 
-const buscarImagenes = termino => {
+const buscarImagenes = () => {
+    const termino = document.querySelector('#termino').value;    
     const key = '23903726-f6955a57141d6856f725b7c8b';
-    const url = `https://pixabay.com/api/?key=${key}&q=${termino}&per_page=60`;
+    const url = `https://pixabay.com/api/?key=${key}&q=${termino}&per_page=${resgistroPagina}&page=${paginaActual}`;
     fetch(url)
         .then(resultado => resultado.json())
         .then(respuesta =>{
+          totalPaginas = calcularPagina(respuesta.totalHits);
            mostrarImagenes(respuesta.hits);
         })
 };
+
+//Buen uso de el generador para iterar sobre la cantidad de elementos
+function *crearPaginador(total){
+    for(let i = 1; i <=total ; i++){
+        yield i;
+    }
+}
+const calcularPagina = (total)=>{
+ return parseInt(Math.ceil(total / resgistroPagina));
+};
 const mostrarImagenes = imagenes =>{
-    console.log(imagenes);
+
 while (resultado.firstChild) {
     resultado.removeChild(resultado.firstChild);
 }
@@ -67,5 +82,31 @@ while (resultado.firstChild) {
         </div>
         `;
     });
+    //limpiar el html
+    while (paginacion.firstChild) {
+        paginacion.removeChild(paginacion.firstChild)
+
+    }
+    imprimirPaginador()
 
 };
+
+function imprimirPaginador() {
+    iterador = crearPaginador(totalPaginas);
+    while (true) {
+  const {value, done} =  iterador.next();
+      if(done) return;
+
+      //en caso contrio crea un parrafo con boton
+      const btn = document.createElement('a');
+      btn.href ='#';
+      btn.dataset.pagina = value;
+      btn.classList.add('siguiente', 'bg-yellow-400','px-4', 'py-1', 'mr-2', 'uppercase', 'font-bold', 'rounded', 'mb-4')
+      btn.textContent= value;
+    btn.onclick = ()=>{
+        paginaActual = value;
+        buscarImagenes()
+    }
+      paginacion.appendChild(btn);
+  }
+}
