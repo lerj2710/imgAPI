@@ -37,16 +37,27 @@ const mostrarAlerta = (mensaje) =>{
     
 };
 
-const buscarImagenes = () => {
+async function buscarImagenes() {
     const termino = document.querySelector('#termino').value;    
+
     const key = '23903726-f6955a57141d6856f725b7c8b';
     const url = `https://pixabay.com/api/?key=${key}&q=${termino}&per_page=${resgistroPagina}&page=${paginaActual}`;
-    fetch(url)
-        .then(resultado => resultado.json())
-        .then(respuesta =>{
-          totalPaginas = calcularPagina(respuesta.totalHits);
-           mostrarImagenes(respuesta.hits);
-        })
+
+    // fetch(url)
+    //     .then(respuesta => respuesta.json())
+    //     .then(resultado =>{
+    //       totalPaginas = calcularPagina(resultado.totalHits);
+    //        mostrarImagenes(resultado.hits);
+    //     });
+    
+         try {
+             const respuesta = await fetch(url)
+            const resultado =  await respuesta.json()
+            totalPaginas = calcularPagina(resultado.totalHits);
+            mostrarImagenes(resultado.hits);
+         } catch (error) {
+             console.log(error);
+         }
 };
 
 //Buen uso de el generador para iterar sobre la cantidad de elementos
